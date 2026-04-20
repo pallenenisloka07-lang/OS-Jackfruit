@@ -1,162 +1,167 @@
-Here’s a **clean README.txt** you can directly use for your project 👇
+# OS Jackfruit Engine – Tasks Documentation
 
+This repository contains screenshots and execution steps for multiple tasks performed using the custom `engine` tool in the OS Jackfruit boilerplate.
 
+---
 
-# README – Container Engine Tasks
+## 🔹 Task 2: Metadata Tracking
 
-## Overview
+### Terminal 1
+Run supervisor:
+```bash
+sudo ./engine supervisor ./rootfs-base
+```
 
-This project demonstrates the working of a custom container engine (`engine.c`) including container creation, supervision, logging, limits, and process management.
+### Terminal 2
+Start containers and check status:
+```bash
+sudo ./engine start alpha ./rootfs-alpha /bin/sh
+sudo ./engine start beta ./rootfs-beta /bin/sh
+sudo ./engine ps
+```
 
+### Output
+- Containers `alpha` and `beta` are started  
+- `engine ps` shows running containers  
 
+---
 
-# Task 1: Running Containers
+## 🔹 Task 3: Bound Buffer Logging
 
-* Compiled engine using:
+### Terminal 1
+```bash
+cd OS-Jackfruit/boilerplate
+sudo ./engine supervisor ./rootfs-base
+```
 
-  
-  gcc engine.c -o engine
+### Terminal 2
+```bash
+cd OS-Jackfruit/boilerplate
+sudo touch alpha.log beta.log
+sudo chmod 777 alpha.log beta.log
 
-* Started containers:
+sudo ./engine start alpha ./rootfs-alpha /bin/sh | tee alpha.log
+sudo ./engine start beta ./rootfs-beta /bin/sh | tee beta.log
 
+cat alpha.log
+cat beta.log
+```
 
-  sudo ./engine run alpha ./rootfs-alpha /bin/sh
-  sudo ./engine run beta ./rootfs-beta /bin/sh
- 
-* Verified container execution and PID inside namespace.
+### Output
+- Logs are written into `alpha.log` and `beta.log`  
+- Buffer count increases correctly  
 
+---
 
+## 🔹 Task 4: Start, List, Stop Containers
 
-#  Task 2: Supervisor Mode
+```bash
+cd OS-Jackfruit/boilerplate && \
+sudo ./engine start alpha ./rootfs-alpha /bin/sh && \
+sudo ./engine start beta ./rootfs-beta /bin/sh && \
+sudo ./engine ps && \
+sudo ./engine stop alpha
+```
 
-* Ran engine in supervisor mode:
+### Output
+- Containers started successfully  
+- `alpha` container stopped  
 
-  
-  sudo ./engine supervisor ./rootfs-base
+---
 
-* Supervisor handles container lifecycle.
-* Client commands used:
+## 🔹 Task 5 & 6: Kernel Monitoring
 
- 
-  sudo ./engine start alpha ./rootfs-alpha /bin/sh
-  sudo ./engine start beta ./rootfs-beta /bin/sh
-  sudo ./engine ps
- 
-* Output shows running containers and their status.
+### Terminal 1
+```bash
+sudo ./engine supervisor ./rootfs-base
+```
 
+### Terminal 2
+```bash
+sudo sysctl -w kernel.dmesg_restrict=0
+sudo insmod monitor.ko
 
+sudo ./engine start alpha ./rootfs-alpha ./memory_hog
 
-#  Task 3: Logging
+dmesg | tail
+```
 
-* Enabled logging of container activity.
-* Logs stored in:
+### Output
+- Kernel logs show memory limit exceeded  
+- Process killed by kernel (OOM condition)  
 
-  
-  log.txt
-  
-* Verified logs using:
+---
 
-  
-  cat log.txt
-  
-* Logs include container start events and PIDs.
+## 🔹 Task 7: CPU Monitoring
 
+```bash
+sudo ./engine start alpha ./rootfs-alpha ./cpu_hog
+sudo ./engine start beta ./rootfs-beta ./io_pulse
+```
 
+### Output
+- CPU usage and load average increase observed  
 
-#  Task 4: Stopping Containers
+---
 
-* Stopped running container:
+## 🔹 Task 8: Process Cleanup (Defunct Processes)
 
-  
-  sudo ./engine stop alpha
-  
-* Verified using:
+### Terminal 1
+```bash
+sudo ./engine supervisor ./rootfs-base
+```
 
+### Terminal 2
+```bash
+sudo ./engine start alpha ./rootfs-alpha /bin/sh
+sudo ./engine start beta ./rootfs-beta /bin/sh
+sudo ./engine stop alpha
+sudo ./engine stop beta
 
-  sudo ./engine ps
-  
-* Container successfully terminated.
+ps aux | grep defunct
+```
 
+### Output
+- Containers stopped successfully  
+- Checked for defunct (zombie) processes  
 
+---
 
-#  Task 5: Soft Limit Handling
+## ✅ Summary
 
-* Supervisor enforces soft limits.
-* When limit exceeded:
+- Implemented container lifecycle management using `engine`  
+- Verified logging, monitoring, and cleanup  
+- Observed kernel-level behaviors (OOM, CPU load)  
 
-  * Warning message generated
-  * Logged in `log.txt`
-* Example:
+---
 
-  
-  WARNING: alpha exceeded soft limit
- 
+## 📌 Notes
 
+- Ensure `sudo` privileges are enabled  
+- Run supervisor before starting containers  
+- Use `dmesg` for kernel debugging  
 
+---
 
-#  Task 6: Hard Limit Handling
+## 📷 Screenshots
 
-* If container exceeds hard limit:
+Refer to the uploaded images in this repository for execution proof of each task.
 
-  * It is forcefully terminated
-* Output:
+---
 
- 
-  Killed container alpha
-  LOG: alpha exceeded hard limit
-  
+## 🚀 How to Run
 
+```bash
+git clone <your-repo-link>
+cd OS-Jackfruit/boilerplate
+make
+```
 
+Then follow the commands listed in each task.
 
-#  Task 7: Process Monitoring
+---
 
-* Checked running processes:
+## 👨‍💻 Author
 
-  
-  ps -ef | grep sleep
-  
-* Used `nice` command:
-
-  
-  nice -n 10 sleep 1000 &
-  
-* Verified process priority and execution.
-
-
-
-#  Task 8: Killing Processes
-
-* Stopped containers:
-
- 
-  sudo ./engine stop alpha
-  sudo ./engine stop beta
-
-* Killed background processes:
-
-
-  kill -9 <PID>
-  
-* Verified using:
-
- 
-  ps aux | grep engine
-  ps aux | grep sleep
-  
-
-
-#  Key Concepts Covered
-
-* Container creation & execution
-* Namespace isolation
-* Supervisor-based management
-* Logging mechanism
-* Resource limits (soft & hard)
-* Process monitoring & control
-
-
-
-#  Conclusion
-
-The implementation successfully demonstrates a basic container runtime with process isolation, supervision, logging, and resource control similar to real-world container systems.
-
+- Your Name  
+- Course / Lab Details  
