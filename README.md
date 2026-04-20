@@ -34,7 +34,7 @@ sudo ./engine start alpha ./rootfs-alpha /bin/sh
 sudo ./engine start beta ./rootfs-beta /bin/sh
 ```
 
-![Screenshot 1 — Multi-Container Supervision](ss1.png)
+![Screenshot 1 — Multi-Container Supervision](screenshots/ss1.png)
 
 ---
 
