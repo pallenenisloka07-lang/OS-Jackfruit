@@ -130,29 +130,5 @@ ps aux | grep defunct
 
 ![Screenshot 8 — Clean Teardown](ss8.png)
 
----
-
-## ✅ Summary
-
-- Multi-container management using `clone()`
-- Supervisor-client communication via UNIX sockets
-- Logging using bounded buffer
-- Kernel-level monitoring (memory limits)
-- CPU scheduling using nice values
-- Clean process lifecycle management
-
----
-
-## 🛠️ Tech Stack
-
-- C Programming  
-- Linux System Calls  
-- Namespaces (PID, UTS, Mount)  
-- Kernel Module (`monitor.ko`)  
-
----
-
-## 👨‍💻 Author
-
 - Your Name  
 - Course / Lab Details  
