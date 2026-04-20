@@ -1,155 +1,12 @@
-# OS Jackfruit Engine – Tasks Documentation
+# Multi-Container Runtime (OS Jackfruit)
 
-This repository contains screenshots and execution steps for multiple tasks performed using the custom `engine` tool in the OS Jackfruit boilerplate.
+## 📌 Overview
 
----
-
-## 🔹 Task 2: Metadata Tracking
-
-### Terminal 1
-Run supervisor:
-```bash
-sudo ./engine supervisor ./rootfs-base
-```
-
-### Terminal 2
-Start containers and check status:
-```bash
-sudo ./engine start alpha ./rootfs-alpha /bin/sh
-sudo ./engine start beta ./rootfs-beta /bin/sh
-sudo ./engine ps
-```
-
-### Output
-- Containers `alpha` and `beta` are started  
-- `engine ps` shows running containers  
+This project implements a lightweight container runtime using Linux namespaces, process isolation, and a supervisor-client architecture. It supports multiple containers, logging, monitoring, and scheduling experiments.
 
 ---
 
-## 🔹 Task 3: Bound Buffer Logging
-
-### Terminal 1
-```bash
-cd OS-Jackfruit/boilerplate
-sudo ./engine supervisor ./rootfs-base
-```
-
-### Terminal 2
-```bash
-cd OS-Jackfruit/boilerplate
-sudo touch alpha.log beta.log
-sudo chmod 777 alpha.log beta.log
-
-sudo ./engine start alpha ./rootfs-alpha /bin/sh | tee alpha.log
-sudo ./engine start beta ./rootfs-beta /bin/sh | tee beta.log
-
-cat alpha.log
-cat beta.log
-```
-
-### Output
-- Logs are written into `alpha.log` and `beta.log`  
-- Buffer count increases correctly  
-
----
-
-## 🔹 Task 4: Start, List, Stop Containers
-
-```bash
-cd OS-Jackfruit/boilerplate && \
-sudo ./engine start alpha ./rootfs-alpha /bin/sh && \
-sudo ./engine start beta ./rootfs-beta /bin/sh && \
-sudo ./engine ps && \
-sudo ./engine stop alpha
-```
-
-### Output
-- Containers started successfully  
-- `alpha` container stopped  
-
----
-
-## 🔹 Task 5 & 6: Kernel Monitoring
-
-### Terminal 1
-```bash
-sudo ./engine supervisor ./rootfs-base
-```
-
-### Terminal 2
-```bash
-sudo sysctl -w kernel.dmesg_restrict=0
-sudo insmod monitor.ko
-
-sudo ./engine start alpha ./rootfs-alpha ./memory_hog
-
-dmesg | tail
-```
-
-### Output
-- Kernel logs show memory limit exceeded  
-- Process killed by kernel (OOM condition)  
-
----
-
-## 🔹 Task 7: CPU Monitoring
-
-```bash
-sudo ./engine start alpha ./rootfs-alpha ./cpu_hog
-sudo ./engine start beta ./rootfs-beta ./io_pulse
-```
-
-### Output
-- CPU usage and load average increase observed  
-
----
-
-## 🔹 Task 8: Process Cleanup (Defunct Processes)
-
-### Terminal 1
-```bash
-sudo ./engine supervisor ./rootfs-base
-```
-
-### Terminal 2
-```bash
-sudo ./engine start alpha ./rootfs-alpha /bin/sh
-sudo ./engine start beta ./rootfs-beta /bin/sh
-sudo ./engine stop alpha
-sudo ./engine stop beta
-
-ps aux | grep defunct
-```
-
-### Output
-- Containers stopped successfully  
-- Checked for defunct (zombie) processes  
-
----
-
-## ✅ Summary
-
-- Implemented container lifecycle management using `engine`  
-- Verified logging, monitoring, and cleanup  
-- Observed kernel-level behaviors (OOM, CPU load)  
-
----
-
-## 📌 Notes
-
-- Ensure `sudo` privileges are enabled  
-- Run supervisor before starting containers  
-- Use `dmesg` for kernel debugging  
-
----
-
-## 📷 Screenshots
-
-Refer to the uploaded images in this repository for execution proof of each task.
-
----
-
-## 🚀 How to Run
+## ⚙️ Build & Run
 
 ```bash
 git clone <your-repo-link>
@@ -157,7 +14,141 @@ cd OS-Jackfruit/boilerplate
 make
 ```
 
-Then follow the commands listed in each task.
+Start supervisor:
+```bash
+sudo ./engine supervisor ./rootfs-base
+```
+
+---
+
+## 📷 Demo Screenshots & Tasks
+
+---
+
+### 🔹 Task 1 — Multi-Container Supervision
+
+Two containers (`alpha`, `beta`) are started and managed by a single supervisor.
+
+```bash
+sudo ./engine start alpha ./rootfs-alpha /bin/sh
+sudo ./engine start beta ./rootfs-beta /bin/sh
+```
+
+![Screenshot 1 — Multi-Container Supervision](ss1.png)
+
+---
+
+### 🔹 Task 2 — Metadata Tracking
+
+Displays container metadata such as ID and PID.
+
+```bash
+sudo ./engine ps
+```
+
+![Screenshot 2 — Metadata Tracking](ss2.png)
+
+---
+
+### 🔹 Task 3 — Bounded-Buffer Logging
+
+Logs container output using pipe + bounded buffer.
+
+```bash
+sudo touch alpha.log beta.log
+sudo chmod 777 alpha.log beta.log
+
+sudo ./engine start alpha ./rootfs-alpha /bin/sh | tee alpha.log
+sudo ./engine start beta ./rootfs-beta /bin/sh | tee beta.log
+```
+
+![Screenshot 3 — Bounded-Buffer Logging](ss3.png)
+
+---
+
+### 🔹 Task 4 — CLI and IPC
+
+Client sends commands to supervisor via UNIX socket.
+
+```bash
+sudo ./engine ps
+sudo ./engine stop alpha
+```
+
+![Screenshot 4 — CLI and IPC](ss4.png)
+
+---
+
+### 🔹 Task 5 — Soft-Limit Warning
+
+Kernel module logs warning when memory crosses soft limit.
+
+```bash
+sudo sysctl -w kernel.dmesg_restrict=0
+sudo insmod monitor.ko
+```
+
+![Screenshot 5 — Soft-Limit Warning](ss5.png)
+
+---
+
+### 🔹 Task 6 — Hard-Limit Enforcement
+
+Container is killed when memory exceeds hard limit.
+
+```bash
+sudo ./engine start alpha ./rootfs-alpha ./memory_hog
+dmesg | tail
+```
+
+![Screenshot 6 — Hard-Limit Enforcement](ss6.png)
+
+---
+
+### 🔹 Task 7 — Scheduling Experiment
+
+Different nice values affect CPU allocation.
+
+```bash
+sudo ./engine start alpha ./rootfs-alpha ./cpu_hog
+sudo ./engine start beta ./rootfs-beta ./io_pulse
+```
+
+![Screenshot 7 — Scheduling Experiment](ss7.png)
+
+---
+
+### 🔹 Task 8 — Clean Teardown
+
+All containers are stopped and checked for zombie processes.
+
+```bash
+sudo ./engine stop alpha
+sudo ./engine stop beta
+ps aux | grep defunct
+```
+
+![Screenshot 8 — Clean Teardown](ss8.png)
+
+---
+
+## ✅ Summary
+
+- Multi-container management using `clone()`
+- Supervisor-client communication via UNIX sockets
+- Logging using bounded buffer
+- Kernel-level monitoring (memory limits)
+- CPU scheduling using nice values
+- Clean process lifecycle management
+
+---
+
+## 🛠️ Tech Stack
+
+- C Programming  
+- Linux System Calls  
+- Namespaces (PID, UTS, Mount)  
+- Kernel Module (`monitor.ko`)  
 
 ---
 
